@@ -1,0 +1,708 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="description" content="Tap to launch your comet and land in the next orbit. How far can you go? Free in your browser.">
+<meta name="theme-color" content="#0a0f1f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Comet Hop">
+<meta property="og:title" content="Comet Hop">
+<meta property="og:description" content="Tap to launch your comet and land in the next orbit. How far can you go?">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://lumbit-games.github.io/comet-hop/">
+<meta property="og:image" content="https://lumbit-games.github.io/comet-hop/icon-512.png">
+<meta name="twitter:card" content="summary">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Comet Hop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Outfit:wght@400;600&display=swap">
+<style>
+/* Full-screen canvas game with a portrait play column; menus are HTML overlays for crisp text. Single space look by choice. */
+:root {
+  --bg: #0a0f1f;
+  --panel: #141b31;
+  --line: #28324e;
+  --fg: #eef1f8;
+  --muted: #8d96b2;
+  --gold: #ffc65c;
+  --display: "Unbounded", "Arial Black", system-ui, sans-serif;
+  --body: "Outfit", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body {
+  margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--fg); font-family: var(--body);
+  -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; overscroll-behavior: none;
+}
+#game { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+.hud {
+  position: fixed; left: 0; right: 0; top: 0; z-index: 5; pointer-events: none;
+  padding: calc(env(safe-area-inset-top, 0px) + 12px) max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px));
+  display: flex; justify-content: space-between; align-items: center;
+}
+.chip { font: 600 15px var(--body); color: var(--gold); background: rgba(20, 27, 49, .75); border: 1px solid var(--line); padding: 7px 12px; border-radius: 999px; }
+.icon-btn {
+  pointer-events: auto; width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line); background: rgba(20, 27, 49, .75);
+  color: var(--muted); display: grid; place-items: center; cursor: pointer; padding: 0;
+}
+.icon-btn svg { width: 18px; height: 18px; }
+.score { position: fixed; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 58px); transform: translateX(-50%); text-align: center; pointer-events: none; z-index: 4; }
+.score b { display: block; font: 700 48px/1 var(--display); text-shadow: 0 0 28px rgba(255, 198, 92, .35); font-variant-numeric: tabular-nums; }
+.score span { font-size: 12px; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
+.hint {
+  position: fixed; left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom, 0px) + 48px); margin: 0; text-align: center;
+  color: var(--fg); font: 600 17px var(--body); pointer-events: none; animation: blink 1.4s ease-in-out infinite; z-index: 4;
+}
+@keyframes blink { 50% { opacity: .35; } }
+.overlay {
+  position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; background: rgba(5, 8, 18, .5);
+  padding: 16px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.card {
+  width: 100%; max-width: 360px; max-height: calc(100vh - 32px); overflow: auto; background: rgba(20, 27, 49, .94);
+  border: 1px solid var(--line); border-radius: 22px; padding: 24px 20px; text-align: center; display: flex; flex-direction: column; gap: 14px;
+}
+h1 {
+  margin: 0; font: 700 34px var(--display); letter-spacing: .01em;
+  background: linear-gradient(180deg, #fff3d6, var(--gold)); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+h2 { margin: 0; font: 500 20px var(--display); text-wrap: balance; }
+.card p { margin: 0; color: var(--muted); line-height: 1.45; font-size: 15px; }
+.big { font: 700 64px/1 var(--display); font-variant-numeric: tabular-nums; }
+.badge { display: inline-block; background: var(--gold); color: #2a1d00; font-weight: 700; font-size: 12px; letter-spacing: .1em; padding: 5px 12px; border-radius: 999px; text-transform: uppercase; margin-bottom: 6px; }
+.btn { border: 1px solid var(--line); background: var(--panel); color: var(--fg); border-radius: 14px; padding: 13px 10px; font: 600 15px var(--body); cursor: pointer; }
+.btn.gold { background: var(--gold); color: #2a1d00; border-color: var(--gold); font-size: 17px; padding: 15px; }
+.btn.plain { background: transparent; border-color: transparent; color: var(--muted); padding: 6px; }
+.btn:focus-visible, .icon-btn:focus-visible, .seg button:focus-visible, .skin:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.row { display: flex; gap: 8px; }
+.row .btn { flex: 1; }
+.seg { display: flex; background: var(--bg); border-radius: 12px; padding: 4px; gap: 4px; }
+.seg button { flex: 1; border: 0; border-radius: 9px; padding: 10px; background: transparent; color: var(--muted); font: 600 14px var(--body); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--panel); color: var(--fg); }
+.progress { text-align: left; font-size: 14px; color: var(--muted); }
+.progress b { color: var(--fg); font-weight: 600; }
+.bar { height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; margin-top: 7px; }
+.bar i { display: block; height: 100%; background: var(--gold); border-radius: 4px; }
+.skins { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.skin {
+  border: 1px solid var(--line); background: var(--bg); border-radius: 14px; padding: 14px 8px; color: var(--fg);
+  font: 600 14px var(--body); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.skin[aria-pressed="true"] { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold) inset; }
+.skin.locked { opacity: .6; }
+.skin.afford { opacity: 1; border-style: dashed; border-color: var(--gold); }
+.skin .dot { width: 30px; height: 30px; border-radius: 50%; }
+.skin small { color: var(--muted); font-weight: 400; font-size: 12px; }
+.foot { font-size: 12px !important; }
+.toast {
+  position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 30;
+  background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 999px; font-weight: 600; font-size: 14px;
+  max-width: calc(100vw - 32px); text-align: center;
+}
+</style>
+
+<canvas id="game" aria-label="Comet Hop. Tap or press space to launch the comet."></canvas>
+
+<div class="hud">
+  <div class="chip" id="dust" aria-label="Stardust">✦ 0</div>
+  <button class="icon-btn" id="btn-sound" aria-label="Turn sound off"></button>
+</div>
+<div class="score" id="score-box" hidden><b id="score">0</b><span id="score-sub"></span></div>
+<p class="hint" id="hint" hidden>Tap to launch</p>
+
+<div class="overlay" id="ov-menu">
+  <div class="card">
+    <h1>Comet Hop</h1>
+    <p>Tap to fly off your orbit and land in the next one. Aim for the planet's core for a perfect landing.</p>
+    <div class="seg" role="group" aria-label="Mode">
+      <button id="m-endless" aria-pressed="true">Endless</button>
+      <button id="m-daily" aria-pressed="false">Daily run</button>
+    </div>
+    <p id="menu-best"></p>
+    <button class="btn gold" id="btn-play">Play</button>
+    <button class="btn" id="btn-skins">Comets</button>
+    <p class="foot">Made by Lumbit</p>
+  </div>
+</div>
+
+<div class="overlay" id="ov-over" hidden>
+  <div class="card">
+    <h2 id="over-title">Lost in space</h2>
+    <div class="big" id="over-score">0</div>
+    <div><span class="badge" id="over-badge" hidden>New best</span><p id="over-best"></p></div>
+    <p id="over-dust"></p>
+    <div class="progress" id="over-next"></div>
+    <button class="btn gold" id="btn-retry">Play again</button>
+    <div class="row">
+      <button class="btn" id="btn-skins2">Comets</button>
+      <button class="btn" id="btn-share">Share</button>
+    </div>
+    <button class="btn plain" id="btn-menu">Menu</button>
+  </div>
+</div>
+
+<div class="overlay" id="ov-skins" hidden>
+  <div class="card">
+    <h2>Comets</h2>
+    <p id="skins-dust"></p>
+    <div class="skins" id="skins"></div>
+    <button class="btn gold" id="btn-skins-close">Done</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script>
+"use strict";
+const VW = 400;                         // play column width in world units; height follows the screen
+const TAU = Math.PI * 2;
+const lerp = (a, b, t) => a + (b - a) * t;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const $ = id => document.getElementById(id);
+
+function mulberry32(a) {
+  return () => {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function hash(str) {
+  let h = 2166136261;
+  for (const c of str) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+};
+function dateKey(d = new Date()) {
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+const today = dateKey();
+// True on the public website build (build.sh adds the manifest link); false in the private preview.
+const PUBLIC = !!document.querySelector('link[rel="manifest"]');
+
+// Analytics (public site only): GoatCounter, no cookies, no personal data. Dashboard: https://lumbit.goatcounter.com
+const pendingEvents = [], trackedOnce = new Set();
+function track(name, once = false) {
+  if (!PUBLIC || (once && trackedOnce.has(name))) return;
+  trackedOnce.add(name);
+  try {
+    const gc = window.goatcounter;
+    if (gc && gc.count) gc.count({ path: name, title: name, event: true });
+    else pendingEvents.push(name);
+  } catch {}
+}
+if (PUBLIC) {
+  const s = document.createElement("script");
+  s.async = true;
+  s.src = "https://gc.zgo.at/count.js";
+  s.dataset.goatcounter = "https://lumbit.goatcounter.com/count";
+  s.onload = () => pendingEvents.splice(0).forEach(n => track(n));
+  document.head.appendChild(s);
+  const last = store.get("ch-last-visit", null);
+  if (last && last !== today) track("comet-returning");
+  store.set("ch-last-visit", today);
+}
+
+// Synthesized sound (Web Audio), no files. The context starts on the first tap.
+const sfx = (() => {
+  let ctx = null, muted = store.get("ch-muted", false);
+  const ac = () => {
+    if (muted) return null;
+    try {
+      ctx ??= new (window.AudioContext || window.webkitAudioContext)();
+      if (ctx.state === "suspended") ctx.resume();
+    } catch { return null; }
+    return ctx;
+  };
+  function tone(freq, { at = 0, dur = .12, type = "sine", vol = .1, to = 0, attack = .005 } = {}) {
+    const c = ac(); if (!c) return;
+    const t = c.currentTime + at, o = c.createOscillator(), g = c.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, t);
+    if (to) o.frequency.exponentialRampToValueAtTime(to, t + dur);
+    g.gain.setValueAtTime(.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + attack);
+    g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    o.connect(g).connect(c.destination);
+    o.start(t); o.stop(t + dur + .02);
+  }
+  const semi = n => Math.pow(2, n / 12);
+  return {
+    get muted() { return muted; },
+    toggle() { muted = !muted; store.set("ch-muted", muted); return muted; },
+    hop() { tone(440, { dur: .1, type: "triangle", vol: .05, to: 760 }); },
+    land(k) { const f = 392 * semi(Math.min(k, 14)); tone(f, { dur: .2, vol: .08 }); tone(f * 2, { dur: .12, vol: .025 }); },
+    perfect(k) { const f = 523 * semi(Math.min(k, 10) * 2); tone(f, { dur: .4, vol: .07, attack: .01 }); tone(f * 1.5, { at: .05, dur: .35, vol: .05, attack: .01 }); },
+    dust() { tone(1568 + Math.random() * 200, { dur: .06, vol: .03 }); },
+    milestone() { [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, { at: i * .07, dur: .45, vol: .055, attack: .01 })); },
+    die() { tone(200, { dur: .55, type: "sawtooth", vol: .05, to: 45 }); },
+    buy() { [784, 988, 1175, 1568].forEach((f, i) => tone(f, { at: i * .06, dur: .3, vol: .05, attack: .01 })); }
+  };
+})();
+const buzz = ms => { if (!sfx.muted) try { navigator.vibrate?.(ms); } catch {} };
+
+// Comet looks, bought with stardust. Purely cosmetic.
+const SKINS = [
+  { id: "ember",  name: "Ember",  head: "#ffd27a", trail: [255, 190, 80],  cost: 0 },
+  { id: "frost",  name: "Frost",  head: "#c9f4ff", trail: [120, 220, 255], cost: 60 },
+  { id: "rose",   name: "Rose",   head: "#ffd0de", trail: [255, 120, 165], cost: 140 },
+  { id: "lime",   name: "Lime",   head: "#e4ffc4", trail: [160, 255, 90],  cost: 240 },
+  { id: "violet", name: "Violet", head: "#eadcff", trail: [180, 130, 255], cost: 380 },
+  { id: "solar",  name: "Solar",  head: "#ffffff", trail: [255, 110, 50],  cost: 550 },
+  { id: "aurora", name: "Aurora", head: "#ffffff", trail: null,            cost: 800 },
+  { id: "void",   name: "Void",   head: "#0a0f1f", trail: [110, 120, 255], cost: 1200 }
+];
+const save = {
+  best: store.get("ch-best", 0),
+  dust: store.get("ch-dust", 0),
+  owned: store.get("ch-owned", ["ember"]),
+  skin: store.get("ch-skin", "ember"),
+  runs: store.get("ch-runs", 0)
+};
+const skin = () => SKINS.find(s => s.id === save.skin) || SKINS[0];
+const dailyBest = () => store.get("ch-daily-" + today, 0);
+
+// ---------- Canvas & world ----------
+const cv = $("game"), ctx = cv.getContext("2d");
+let W = 0, H = 0, DPR = 1, S = 1, OX = 0, VH = 800;
+function resize() {
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  W = innerWidth; H = innerHeight;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  const playW = Math.min(W, H * .62);
+  S = playW / VW; OX = (W - playW) / 2; VH = H / S;
+}
+addEventListener("resize", resize);
+resize();
+
+const STARS = Array.from({ length: 140 }, () => ({ x: Math.random(), y: Math.random(), z: .08 + Math.random() * .45, s: .5 + Math.random() * 1.4, tw: Math.random() * TAU }));
+const PLANET_HUES = [205, 265, 320, 170, 28, 48, 190, 290];
+const ZONE_HUES = [228, 262, 196, 300, 170, 20];
+
+let mode = "endless";
+let state = "menu";          // menu | play | over
+let G = null;                // the current run
+
+function newRun() {
+  const seed = mode === "daily" ? hash("comet-" + today) : Math.floor(Math.random() * 2 ** 31);
+  G = {
+    rng: mulberry32(seed), planets: [], dust: [], parts: [], rings: [], pops: [], trail: [],
+    score: 0, hops: 0, perfects: 0, streak: 0, dustRun: 0,
+    cur: null, from: null, dir: 1, theta: Math.PI / 2, orbitR: 0, flying: false, flyT: 0,
+    pos: { x: VW / 2, y: 0 }, vel: { x: 0, y: 0 }, camY: 0, shake: 0, dead: false, nearMiss: Infinity,
+    time: 0, zoneHue: ZONE_HUES[0]
+  };
+  const p0 = { i: 0, x: VW / 2, y: 0, r: 24, R: 60, omega: 1.6, dir: 1, move: null, hue: PLANET_HUES[0] };
+  G.planets.push(p0);
+  while (G.planets.length < 7) addPlanet();
+  G.cur = G.from = p0; G.dir = p0.dir; G.orbitR = p0.R;
+  G.pos = { x: p0.x, y: p0.y + p0.R };
+  G.camY = p0.y - VH * .68;
+}
+
+// Each new planet is a bit further, smaller and faster. Later ones drift sideways.
+function addPlanet() {
+  const prev = G.planets[G.planets.length - 1], rng = G.rng;
+  const i = prev.i + 1, d = Math.min(1, i / 70);
+  const r = lerp(22, 13, d) + rng() * 5;
+  const R = r + lerp(36, 25, d);
+  const gap = lerp(165, 235, d) + rng() * 45;
+  let x = VW / 2;
+  for (let k = 0; k < 20; k++) { x = 60 + rng() * (VW - 120); if (Math.abs(x - prev.x) > 60) break; }
+  const omega = (i < 4 ? 1.6 : lerp(1.9, 3.4, d)) + rng() * .5;
+  let move = null;
+  if (i > 10 && rng() < Math.min(.55, (i - 10) / 35)) {
+    const amp = 18 + rng() * 50 * d + 10;
+    const x0 = clamp(x, R + amp + 10, VW - R - amp - 10);
+    move = { x0, amp, sp: .5 + rng() * .9, ph: rng() * TAU };
+    x = x0;
+  }
+  const y = prev.y - gap;
+  G.planets.push({ i, x, y, r, R, omega, dir: rng() < .5 ? 1 : -1, move, hue: PLANET_HUES[Math.floor(rng() * PLANET_HUES.length)] });
+  const n = rng() < .65 ? 2 : 3;
+  for (let k = 1; k <= n; k++) {
+    const t = k / (n + 1);
+    G.dust.push({ x: clamp(lerp(prev.x, x, t) + (rng() - .5) * 44, 24, VW - 24), y: lerp(prev.y, y, t) + (rng() - .5) * 24, got: false, ph: rng() * TAU });
+  }
+}
+
+function hop() {
+  if (state !== "play" || G.dead || G.flying) return;
+  const sp = 400 + Math.min(G.hops, 60) * 3.2;
+  G.vel = { x: -Math.sin(G.theta) * G.dir * sp, y: Math.cos(G.theta) * G.dir * sp };
+  G.flying = true; G.flyT = 0; G.from = G.cur; G.nearMiss = Infinity;
+  burst(G.pos.x, G.pos.y, 6, skinColor(0, 1), 90);
+  sfx.hop();
+  $("hint").hidden = true;
+}
+
+function capture(p, dx, dy, d) {
+  const cross = dx * G.vel.y - dy * G.vel.x;
+  const perp = Math.abs(cross) / Math.hypot(G.vel.x, G.vel.y);   // how close the flight line passed to the core
+  const perfect = perp < p.r * 1.1;
+  G.dir = cross >= 0 ? 1 : -1;                                 // keep spinning the way we arrived
+  G.theta = Math.atan2(dy, dx); G.orbitR = d; G.cur = p; G.flying = false;
+  const gained = p.i - G.from.i;
+  if (gained <= 0) { sfx.land(0); return; }
+  const before = G.hops;
+  G.hops += gained;
+  let pts = gained, label = "+" + gained;
+  if (perfect) {
+    G.streak++; G.perfects++;
+    G.dustRun++; save.dust++; store.set("ch-dust", save.dust);    // a perfect landing also earns one stardust
+    const bonus = Math.min(G.streak, 5);
+    pts += bonus;
+    label = (G.streak > 1 ? `PERFECT ×${G.streak}  +${pts}` : `PERFECT  +${pts}`) + "  ✦";
+    sfx.perfect(G.streak);
+    buzz(15);
+    G.rings.push({ x: p.x, y: p.y, r: p.R, life: 1, hue: 45 });
+  } else {
+    G.streak = 0;
+    sfx.land(Math.min(G.hops, 14));
+  }
+  G.score += pts;
+  pop(p.x, p.y - p.R - 14, label, perfect ? "#ffd27a" : "#eef1f8", perfect ? 17 : 15);
+  burst(G.pos.x, G.pos.y, perfect ? 18 : 10, `hsl(${p.hue},90%,70%)`, 140);
+  G.rings.push({ x: p.x, y: p.y, r: p.r, life: .8, hue: p.hue });
+  if (Math.floor(G.hops / 10) > Math.floor(before / 10)) {
+    const m = Math.floor(G.hops / 10) * 10;
+    setTimeout(() => sfx.milestone(), 120);
+    pop(p.x, p.y - p.R - 40, `★ ${m} hops`, "#ffd27a", 20);
+    G.rings.push({ x: p.x, y: p.y, r: p.R * 1.2, life: 1.4, hue: 45 });
+    if (m === 10 || m === 25 || m === 50 || m === 100) track("comet-hops-" + m, true);
+  }
+  if (G.hops >= 25 && before < 25) track("comet-hops-25", true);
+  while (G.planets[G.planets.length - 1].i < p.i + 6) addPlanet();
+  updateHud();
+}
+
+function die() {
+  G.dead = true; G.shake = 16; G.flying = false;
+  burst(G.pos.x, G.pos.y, 46, skinColor(0, 1), 260);
+  sfx.die(); buzz(70);
+  save.runs++; store.set("ch-runs", save.runs);
+  setTimeout(showGameOver, 750);
+}
+
+// ---------- Effects ----------
+function burst(x, y, n, color, speed) {
+  for (let k = 0; k < n; k++) {
+    const a = Math.random() * TAU, v = speed * (.3 + Math.random() * .7);
+    G.parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 1, max: .5 + Math.random() * .6, color, size: 1.5 + Math.random() * 2.5 });
+  }
+}
+function pop(x, y, text, color, size) { G.pops.push({ x, y, text, color, size, life: 1 }); }
+function skinColor(k, a) {
+  const s = skin();
+  if (!s.trail) return `hsla(${(G.time * 140 + k * 14) % 360},95%,65%,${a})`;
+  return `rgba(${s.trail[0]},${s.trail[1]},${s.trail[2]},${a})`;
+}
+
+// ---------- Update ----------
+function update(dt) {
+  G.time += dt;
+  for (const p of G.planets) if (p.move) p.x = p.move.x0 + Math.sin(G.time * p.move.sp + p.move.ph) * p.move.amp;
+
+  if (!G.dead) {
+    if (!G.flying) {
+      G.theta += G.dir * G.cur.omega * dt;
+      G.orbitR = lerp(G.orbitR, G.cur.R, 1 - Math.exp(-dt * 10));
+      G.pos = { x: G.cur.x + Math.cos(G.theta) * G.orbitR, y: G.cur.y + Math.sin(G.theta) * G.orbitR };
+    } else {
+      G.flyT += dt;
+      const steps = 3;
+      for (let s = 0; s < steps && G.flying; s++) {
+        G.pos.x += G.vel.x * dt / steps; G.pos.y += G.vel.y * dt / steps;
+        for (const d of G.dust) {
+          if (!d.got && Math.hypot(d.x - G.pos.x, d.y - G.pos.y) < 20) {
+            d.got = true; G.dustRun++; save.dust++; store.set("ch-dust", save.dust);
+            sfx.dust(); burst(d.x, d.y, 6, "rgba(255,210,122,1)", 70); updateHud();
+          }
+        }
+        for (const p of G.planets) {
+          if (p === G.from) continue;
+          const dx = G.pos.x - p.x, dy = G.pos.y - p.y, d = Math.hypot(dx, dy);
+          const capR = p.R + (save.runs < 3 && G.hops < 4 ? 14 : 8);
+          if (d < capR) { capture(p, dx, dy, d); break; }
+          if (p.i === G.from.i + 1) G.nearMiss = Math.min(G.nearMiss, d - capR);
+        }
+      }
+      if (G.flying && (G.pos.x < -40 || G.pos.x > VW + 40 || G.pos.y > G.camY + VH + 60 || G.flyT > 2.6)) die();
+    }
+    G.trail.push({ x: G.pos.x, y: G.pos.y });
+    if (G.trail.length > 30) G.trail.shift();
+  } else if (G.trail.length) G.trail.shift();
+
+  // Camera: keep the comet's planet in the lower part of the screen; follow the comet up while it flies.
+  const anchor = G.flying ? Math.min(G.from.y, G.pos.y + 60) : G.cur.y;
+  G.camY = lerp(G.camY, anchor - VH * .68, 1 - Math.exp(-dt * 4));
+  const zt = ZONE_HUES[Math.floor(G.hops / 25) % ZONE_HUES.length];
+  G.zoneHue = lerp(G.zoneHue, zt, 1 - Math.exp(-dt * .8));
+  G.shake *= Math.exp(-dt * 9);
+
+  for (const q of G.parts) { q.x += q.vx * dt; q.y += q.vy * dt; q.vx *= .96; q.vy *= .96; q.life -= dt / q.max; }
+  G.parts = G.parts.filter(q => q.life > 0);
+  for (const r of G.rings) { r.r += 60 * dt; r.life -= dt * 1.4; }
+  G.rings = G.rings.filter(r => r.life > 0);
+  for (const t of G.pops) { t.y -= 28 * dt; t.life -= dt * .9; }
+  G.pops = G.pops.filter(t => t.life > 0);
+  const cut = G.camY + VH + 220;
+  G.planets = G.planets.filter(p => p.y < cut || p === G.cur || p === G.from);
+  G.dust = G.dust.filter(d => d.y < cut);
+}
+
+// ---------- Draw ----------
+function draw() {
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, `hsl(${G.zoneHue},45%,14%)`);
+  bg.addColorStop(1, "#0a0f1f");
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+
+  for (const s of STARS) {
+    const y = ((s.y * H - G.camY * S * s.z) % H + H) % H;
+    const a = .35 + .35 * Math.sin(G.time * 1.5 + s.tw);
+    ctx.fillStyle = `rgba(220,230,255,${a})`;
+    ctx.fillRect(s.x * W, y, s.s, s.s);
+  }
+
+  const sx = (Math.random() - .5) * G.shake, sy = (Math.random() - .5) * G.shake;
+  ctx.setTransform(DPR * S, 0, 0, DPR * S, DPR * (OX + sx), DPR * (-G.camY * S + sy));
+
+  if (OX > 4) {   // wide screens: soft edges of the play column
+    ctx.fillStyle = "rgba(255,255,255,.04)";
+    ctx.fillRect(-2, G.camY, 2, VH); ctx.fillRect(VW, G.camY, 2, VH);
+  }
+
+  // Aim guide for the first runs: where the comet will go if you tap now.
+  if (state === "play" && !G.flying && !G.dead && save.runs < 3 && G.hops < 6) {
+    const tx = -Math.sin(G.theta) * G.dir, ty = Math.cos(G.theta) * G.dir;
+    ctx.setLineDash([4, 8]); ctx.lineWidth = 2; ctx.strokeStyle = "rgba(255,255,255,.28)";
+    ctx.beginPath(); ctx.moveTo(G.pos.x, G.pos.y); ctx.lineTo(G.pos.x + tx * 260, G.pos.y + ty * 260); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  for (const p of G.planets) {
+    const active = p === G.cur && !G.flying;
+    ctx.setLineDash([3, 7]); ctx.lineWidth = active ? 2 : 1.5;
+    ctx.strokeStyle = `hsla(${p.hue},90%,75%,${active ? .6 : .25})`;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.R, 0, TAU); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = `hsla(${p.hue},90%,60%,.12)`;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r * 1.7, 0, TAU); ctx.fill();
+    const g = ctx.createRadialGradient(p.x - p.r * .35, p.y - p.r * .4, p.r * .1, p.x, p.y, p.r);
+    g.addColorStop(0, `hsl(${p.hue},85%,74%)`); g.addColorStop(1, `hsl(${p.hue},60%,30%)`);
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, TAU); ctx.fill();
+  }
+
+  for (const d of G.dust) {
+    if (d.got) continue;
+    const s = 5 + Math.sin(G.time * 4 + d.ph) * 1.2;
+    ctx.save(); ctx.translate(d.x, d.y); ctx.rotate(G.time * 1.5 + d.ph);
+    ctx.fillStyle = "#ffd27a"; ctx.shadowColor = "#ffc65c"; ctx.shadowBlur = 10;
+    ctx.beginPath();
+    for (let k = 0; k < 8; k++) { const rr = k % 2 ? s * .35 : s; ctx.lineTo(Math.cos(k * TAU / 8) * rr, Math.sin(k * TAU / 8) * rr); }
+    ctx.fill(); ctx.restore();
+  }
+
+  ctx.globalCompositeOperation = "lighter";
+  for (const r of G.rings) {
+    ctx.strokeStyle = `hsla(${r.hue},95%,70%,${Math.max(0, r.life) * .6})`; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(r.x, r.y, r.r, 0, TAU); ctx.stroke();
+  }
+  ctx.lineCap = "round";
+  const T = G.trail, glow = Math.min(G.streak, 6);
+  for (let k = 1; k < T.length; k++) {
+    const a = k / T.length;
+    ctx.strokeStyle = skinColor(k, a * .9); ctx.lineWidth = .8 + a * (7 + glow);
+    ctx.beginPath(); ctx.moveTo(T[k - 1].x, T[k - 1].y); ctx.lineTo(T[k].x, T[k].y); ctx.stroke();
+  }
+  for (const q of G.parts) { ctx.fillStyle = q.color; ctx.globalAlpha = Math.max(0, q.life); ctx.fillRect(q.x - q.size / 2, q.y - q.size / 2, q.size, q.size); }
+  ctx.globalAlpha = 1;
+  if (!G.dead) {
+    const hr = 16 + glow * 3;
+    const h = ctx.createRadialGradient(G.pos.x, G.pos.y, 0, G.pos.x, G.pos.y, hr);
+    h.addColorStop(0, skinColor(0, .8)); h.addColorStop(1, skinColor(0, 0));
+    ctx.fillStyle = h; ctx.beginPath(); ctx.arc(G.pos.x, G.pos.y, hr, 0, TAU); ctx.fill();
+  }
+  ctx.globalCompositeOperation = "source-over";
+  if (!G.dead) {
+    const s = skin();
+    ctx.fillStyle = s.head; ctx.beginPath(); ctx.arc(G.pos.x, G.pos.y, 5.5, 0, TAU); ctx.fill();
+    if (s.id === "void") { ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.5; ctx.stroke(); }
+  }
+
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  for (const t of G.pops) {
+    ctx.globalAlpha = Math.min(1, t.life * 1.6);
+    ctx.font = `700 ${t.size}px Unbounded, "Arial Black", sans-serif`;
+    ctx.fillStyle = t.color; ctx.fillText(t.text, clamp(t.x, 90, VW - 90), t.y);
+  }
+  ctx.globalAlpha = 1;
+}
+
+// ---------- Loop ----------
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(.05, (now - last) / 1000); last = now;
+  update(dt); draw();
+  requestAnimationFrame(frame);
+}
+
+// ---------- UI ----------
+function updateHud() {
+  $("score").textContent = G.score;
+  $("score-sub").textContent = mode === "daily" ? `Today's best ${dailyBest()}` : `Best ${save.best}`;
+  $("dust").textContent = "✦ " + save.dust;
+}
+
+function startPlay() {
+  newRun();
+  state = "play";
+  ["ov-menu", "ov-over", "ov-skins"].forEach(id => ($(id).hidden = true));
+  $("score-box").hidden = false;
+  $("hint").hidden = save.runs >= 2;
+  updateHud();
+  track("comet-play", true);
+  if (mode === "daily") track("comet-daily", true);
+  overShownAt = Infinity;
+}
+
+let overShownAt = Infinity;
+function showGameOver() {
+  state = "over";
+  const isDaily = mode === "daily";
+  if (!G.result) {   // decide the record once per run; this screen can be shown again after the Comets screen
+    const prevBest = isDaily ? dailyBest() : save.best;
+    const newBest = G.score > prevBest && G.score > 0;
+    if (newBest) {
+      if (isDaily) store.set("ch-daily-" + today, G.score);
+      else { save.best = G.score; store.set("ch-best", save.best); }
+      track("comet-new-best", true);
+    }
+    G.result = { prevBest, newBest };
+  }
+  const { prevBest, newBest } = G.result;
+  $("over-title").textContent = G.nearMiss < 22 ? "So close!" : newBest ? "New record!" : "Lost in space";
+  $("over-score").textContent = G.score;
+  $("over-badge").hidden = !newBest;
+  $("over-best").textContent = `${G.hops} hops · ${G.perfects} perfect` + (newBest ? "" : ` · ${isDaily ? "today's best" : "best"} ${prevBest}`);
+  $("over-dust").textContent = G.dustRun ? `+${G.dustRun} stardust ✦` : "Collect stardust ✦ on the way to unlock new comets";
+  const next = SKINS.find(s => !save.owned.includes(s.id));
+  $("over-next").innerHTML = !next ? "<b>Every comet unlocked.</b> Legend." :
+    save.dust >= next.cost ? `<b>You can unlock ${next.name}!</b> Open Comets.<div class="bar"><i style="width:100%"></i></div>` :
+    `Next comet: <b>${next.name}</b> · ${save.dust} / ${next.cost} ✦<div class="bar"><i style="width:${Math.round(save.dust / next.cost * 100)}%"></i></div>`;
+  updateHud();
+  $("ov-over").hidden = false;
+  overShownAt = performance.now();
+  $("btn-retry").focus({ preventScroll: true });
+}
+
+function showMenu() {
+  state = "menu";
+  newRun();
+  ["ov-over", "ov-skins"].forEach(id => ($(id).hidden = true));
+  $("score-box").hidden = true; $("hint").hidden = true;
+  $("m-endless").setAttribute("aria-pressed", mode === "endless");
+  $("m-daily").setAttribute("aria-pressed", mode === "daily");
+  $("menu-best").textContent = mode === "daily"
+    ? `Same galaxy for everyone today. Your best today: ${dailyBest()}`
+    : save.best ? `Your best: ${save.best}` : "New here? Just tap. You'll get it in a few tries.";
+  $("ov-menu").hidden = false;
+  updateHud();
+}
+
+let skinsFrom = "ov-menu";
+function openSkins(from) {
+  skinsFrom = from;
+  $(from).hidden = true;
+  renderSkins();
+  $("ov-skins").hidden = false;
+}
+function renderSkins() {
+  $("skins-dust").textContent = `You have ${save.dust} stardust ✦`;
+  $("skins").innerHTML = "";
+  for (const s of SKINS) {
+    const owned = save.owned.includes(s.id), b = document.createElement("button");
+    b.className = "skin" + (owned ? "" : save.dust >= s.cost ? " afford" : " locked");
+    b.setAttribute("aria-pressed", save.skin === s.id);
+    const col = s.trail ? `rgb(${s.trail.join(",")})` : "conic-gradient(#ff6b6b,#ffd27a,#7dff8a,#7ad7ff,#c08bff,#ff6b6b)";
+    b.innerHTML = `<span class="dot" style="background:${col};box-shadow:0 0 14px ${s.trail ? col : "#fff8"}"></span>${s.name}` +
+      `<small>${save.skin === s.id ? "Equipped" : owned ? "Tap to use" : s.cost + " ✦"}</small>`;
+    b.onclick = () => {
+      if (owned) { save.skin = s.id; store.set("ch-skin", s.id); }
+      else if (save.dust >= s.cost) {
+        save.dust -= s.cost; save.owned.push(s.id); save.skin = s.id;
+        store.set("ch-dust", save.dust); store.set("ch-owned", save.owned); store.set("ch-skin", s.id);
+        sfx.buy(); toast(`${s.name} unlocked!`); track("comet-skin-buy");
+      } else { toast(`${s.cost - save.dust} more stardust needed`); return; }
+      renderSkins(); updateHud();
+    };
+    $("skins").appendChild(b);
+  }
+}
+
+function shareText() {
+  const link = PUBLIC ? "\n" + location.host + location.pathname.replace(/index\.html$/, "") : "";
+  if (mode === "daily") {
+    const day = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    return `Comet Hop · Daily ${day} ☄️\n🪐 ${G.score} points · ${G.hops} hops\n✨ ${G.perfects} perfect landings${link}`;
+  }
+  return `I scored ${G.score} in Comet Hop ☄️ (${G.hops} hops, ${G.perfects} perfect). Can you beat it?${link}`;
+}
+async function share() {
+  track("comet-share");
+  const text = shareText();
+  try { await navigator.clipboard.writeText(text); toast("Copied. Paste it to a friend."); }
+  catch { toast("Could not copy on this device"); }
+}
+
+let toastTimer;
+function toast(msg) {
+  const t = $("toast"); t.textContent = msg; t.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => (t.hidden = true), 2200);
+}
+
+const SPEAKER = '<path d="M4 9h4l5-4v14l-5-4H4z"/>';
+function paintSound() {
+  const b = $("btn-sound");
+  b.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${SPEAKER}` +
+    (sfx.muted ? '<path d="M17 9.5l5 5M22 9.5l-5 5"/>' : '<path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/>') + "</svg>";
+  b.setAttribute("aria-label", sfx.muted ? "Turn sound on" : "Turn sound off");
+}
+
+// ---------- Input ----------
+cv.addEventListener("pointerdown", e => { e.preventDefault(); if (state === "play") hop(); });
+$("ov-over").addEventListener("pointerdown", e => {
+  if (e.target.id === "ov-over" && performance.now() - overShownAt > 500) startPlay();   // tap the empty space to retry fast
+});
+document.addEventListener("keydown", e => {
+  if (e.key !== " " && e.key !== "ArrowUp" && e.key !== "Enter") return;
+  if (state === "play") { e.preventDefault(); hop(); }
+  else if (state === "over" && e.key === " " && performance.now() - overShownAt > 400) { e.preventDefault(); startPlay(); }
+});
+$("btn-play").onclick = startPlay;
+$("btn-retry").onclick = startPlay;
+$("btn-menu").onclick = showMenu;
+$("btn-share").onclick = share;
+$("btn-skins").onclick = () => openSkins("ov-menu");
+$("btn-skins2").onclick = () => openSkins("ov-over");
+$("btn-skins-close").onclick = () => { $("ov-skins").hidden = true; $(skinsFrom).hidden = false; if (skinsFrom === "ov-over") showGameOver(); };
+$("m-endless").onclick = () => { mode = "endless"; showMenu(); };
+$("m-daily").onclick = () => { mode = "daily"; showMenu(); };
+$("btn-sound").onclick = () => { sfx.toggle(); paintSound(); toast(sfx.muted ? "Sound off" : "Sound on"); };
+
+paintSound();
+showMenu();
+requestAnimationFrame(frame);
+if (PUBLIC && "serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>

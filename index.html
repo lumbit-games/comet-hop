@@ -30,6 +30,7 @@
   --fg: #eef1f8;
   --muted: #8d96b2;
   --gold: #ffc65c;
+  --cyan: #7ee3ff;
   --display: "Unbounded", "Arial Black", system-ui, sans-serif;
   --body: "Outfit", system-ui, -apple-system, "Segoe UI", sans-serif;
   color-scheme: dark;
@@ -65,19 +66,23 @@ html, body {
   padding: 16px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
 .card {
-  width: 100%; max-width: 360px; max-height: calc(100vh - 32px); overflow: auto; background: rgba(20, 27, 49, .94);
-  border: 1px solid var(--line); border-radius: 22px; padding: 24px 20px; text-align: center; display: flex; flex-direction: column; gap: 14px;
+  width: 100%; max-width: 360px; max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow: auto;
+  background: rgba(20, 27, 49, .94); border: 1px solid var(--line); border-radius: 22px; padding: 22px 18px;
+  text-align: center; display: flex; flex-direction: column; gap: 12px;
 }
 h1 {
-  margin: 0; font: 700 34px var(--display); letter-spacing: .01em;
+  margin: 0; font: 700 32px var(--display); letter-spacing: .01em;
   background: linear-gradient(180deg, #fff3d6, var(--gold)); -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 h2 { margin: 0; font: 500 20px var(--display); text-wrap: balance; }
 .card p { margin: 0; color: var(--muted); line-height: 1.45; font-size: 15px; }
-.big { font: 700 64px/1 var(--display); font-variant-numeric: tabular-nums; }
+.big { font: 700 60px/1 var(--display); font-variant-numeric: tabular-nums; }
 .badge { display: inline-block; background: var(--gold); color: #2a1d00; font-weight: 700; font-size: 12px; letter-spacing: .1em; padding: 5px 12px; border-radius: 999px; text-transform: uppercase; margin-bottom: 6px; }
 .btn { border: 1px solid var(--line); background: var(--panel); color: var(--fg); border-radius: 14px; padding: 13px 10px; font: 600 15px var(--body); cursor: pointer; }
 .btn.gold { background: var(--gold); color: #2a1d00; border-color: var(--gold); font-size: 17px; padding: 15px; }
+.btn.cont { border-color: var(--cyan); color: var(--cyan); background: transparent; }
+.btn.cont:disabled { opacity: .45; cursor: default; }
+.btn.plus { border-color: var(--gold); color: var(--gold); }
 .btn.plain { background: transparent; border-color: transparent; color: var(--muted); padding: 6px; }
 .btn:focus-visible, .icon-btn:focus-visible, .seg button:focus-visible, .skin:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 .row { display: flex; gap: 8px; }
@@ -85,10 +90,16 @@ h2 { margin: 0; font: 500 20px var(--display); text-wrap: balance; }
 .seg { display: flex; background: var(--bg); border-radius: 12px; padding: 4px; gap: 4px; }
 .seg button { flex: 1; border: 0; border-radius: 9px; padding: 10px; background: transparent; color: var(--muted); font: 600 14px var(--body); cursor: pointer; }
 .seg button[aria-pressed="true"] { background: var(--panel); color: var(--fg); }
-.progress { text-align: left; font-size: 14px; color: var(--muted); }
-.progress b { color: var(--fg); font-weight: 600; }
-.bar { height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; margin-top: 7px; }
-.bar i { display: block; height: 100%; background: var(--gold); border-radius: 4px; }
+.bar { height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; margin-top: 5px; }
+.bar i { display: block; height: 100%; background: var(--gold); border-radius: 3px; }
+.level { text-align: left; font-size: 14px; color: var(--muted); }
+.level b { color: var(--fg); font-weight: 600; }
+.missions { text-align: left; display: flex; flex-direction: column; gap: 9px; background: var(--bg); border-radius: 14px; padding: 12px; }
+.missions .head { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.mission { font-size: 14px; }
+.mission .t { display: flex; justify-content: space-between; gap: 8px; }
+.mission .t span:last-child { color: var(--muted); white-space: nowrap; }
+.mission .bar i { background: var(--cyan); }
 .skins { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .skin {
   border: 1px solid var(--line); background: var(--bg); border-radius: 14px; padding: 14px 8px; color: var(--fg);
@@ -99,6 +110,11 @@ h2 { margin: 0; font: 500 20px var(--display); text-wrap: balance; }
 .skin.afford { opacity: 1; border-style: dashed; border-color: var(--gold); }
 .skin .dot { width: 30px; height: 30px; border-radius: 50%; }
 .skin small { color: var(--muted); font-weight: 400; font-size: 12px; }
+.perks { list-style: none; margin: 0; padding: 0; text-align: left; display: flex; flex-direction: column; gap: 9px; font-size: 15px; }
+.perks li { display: flex; gap: 10px; align-items: flex-start; }
+.perks li::before { content: "✦"; color: var(--gold); }
+.price { font: 700 28px var(--display); }
+.price small { font: 400 14px var(--body); color: var(--muted); }
 .foot { font-size: 12px !important; }
 .toast {
   position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 30;
@@ -119,14 +135,19 @@ h2 { margin: 0; font: 500 20px var(--display); text-wrap: balance; }
 <div class="overlay" id="ov-menu">
   <div class="card">
     <h1>Comet Hop</h1>
-    <p>Tap to fly off your orbit and land in the next one. Aim for the planet's core for a perfect landing.</p>
+    <p id="menu-tag">Tap to fly off your orbit and land in the next one. Aim for the planet's core for a perfect landing.</p>
+    <div class="level" id="menu-level"></div>
     <div class="seg" role="group" aria-label="Mode">
       <button id="m-endless" aria-pressed="true">Endless</button>
       <button id="m-daily" aria-pressed="false">Daily run</button>
     </div>
     <p id="menu-best"></p>
     <button class="btn gold" id="btn-play">Play</button>
-    <button class="btn" id="btn-skins">Comets</button>
+    <div class="missions" id="menu-missions"></div>
+    <div class="row">
+      <button class="btn" id="btn-skins">Comets</button>
+      <button class="btn plus" id="btn-plus">Comet Hop+</button>
+    </div>
     <p class="foot">Made by Lumbit</p>
   </div>
 </div>
@@ -137,8 +158,11 @@ h2 { margin: 0; font: 500 20px var(--display); text-wrap: balance; }
     <div class="big" id="over-score">0</div>
     <div><span class="badge" id="over-badge" hidden>New best</span><p id="over-best"></p></div>
     <p id="over-dust"></p>
-    <div class="progress" id="over-next"></div>
+    <button class="btn cont" id="btn-continue">Continue</button>
+    <button class="btn plain" id="btn-plus2" hidden>Free continues with Comet Hop+</button>
     <button class="btn gold" id="btn-retry">Play again</button>
+    <div class="level" id="over-level"></div>
+    <div class="missions" id="over-missions"></div>
     <div class="row">
       <button class="btn" id="btn-skins2">Comets</button>
       <button class="btn" id="btn-share">Share</button>
@@ -153,6 +177,23 @@ h2 { margin: 0; font: 500 20px var(--display); text-wrap: balance; }
     <p id="skins-dust"></p>
     <div class="skins" id="skins"></div>
     <button class="btn gold" id="btn-skins-close">Done</button>
+  </div>
+</div>
+
+<div class="overlay" id="ov-plus" hidden>
+  <div class="card">
+    <h1>Comet Hop+</h1>
+    <ul class="perks">
+      <li>A free continue in every run</li>
+      <li>Double stardust from everything</li>
+      <li>3 exclusive comets: Nova, Phantom and Prism</li>
+      <li>Ad-free forever</li>
+      <li>Supports a tiny indie studio</li>
+    </ul>
+    <div class="price">$1.99 <small>one-time</small></div>
+    <button class="btn gold" id="btn-plus-want">I want Comet Hop+</button>
+    <p id="plus-note" hidden>Thank you! Comet Hop+ isn't on sale yet. Your tap tells us players want it, so it will come sooner.</p>
+    <button class="btn plain" id="btn-plus-close">Maybe later</button>
   </div>
 </div>
 
@@ -186,7 +227,7 @@ const store = {
 function dateKey(d = new Date()) {
   return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
 }
-const today = dateKey();
+const today = dateKey(), yesterday = dateKey(new Date(Date.now() - 864e5));
 // True on the public website build (build.sh adds the manifest link); false in the private preview.
 const PUBLIC = !!document.querySelector('link[rel="manifest"]');
 
@@ -243,6 +284,9 @@ const sfx = (() => {
     land(k) { const f = 392 * semi(Math.min(k, 14)); tone(f, { dur: .2, vol: .08 }); tone(f * 2, { dur: .12, vol: .025 }); },
     perfect(k) { const f = 523 * semi(Math.min(k, 10) * 2); tone(f, { dur: .4, vol: .07, attack: .01 }); tone(f * 1.5, { at: .05, dur: .35, vol: .05, attack: .01 }); },
     dust() { tone(1568 + Math.random() * 200, { dur: .06, vol: .03 }); },
+    shield() { tone(330, { dur: .35, vol: .06, to: 990, attack: .02 }); },
+    saved() { [880, 660, 990].forEach((f, i) => tone(f, { at: i * .08, dur: .3, vol: .06, attack: .01 })); },
+    golden() { [784, 1047, 1319, 1568, 2093].forEach((f, i) => tone(f, { at: i * .05, dur: .35, vol: .05, attack: .01 })); },
     milestone() { [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, { at: i * .07, dur: .45, vol: .055, attack: .01 })); },
     die() { tone(200, { dur: .55, type: "sawtooth", vol: .05, to: 45 }); },
     buy() { [784, 988, 1175, 1568].forEach((f, i) => tone(f, { at: i * .06, dur: .3, vol: .05, attack: .01 })); }
@@ -250,26 +294,116 @@ const sfx = (() => {
 })();
 const buzz = ms => { if (!sfx.muted) try { navigator.vibrate?.(ms); } catch {} };
 
-// Comet looks, bought with stardust. Purely cosmetic.
+// ---------- Saved progress ----------
+// Comet looks, bought with stardust. Purely cosmetic. Plus comets come with Comet Hop+ (not on sale yet).
 const SKINS = [
-  { id: "ember",  name: "Ember",  head: "#ffd27a", trail: [255, 190, 80],  cost: 0 },
-  { id: "frost",  name: "Frost",  head: "#c9f4ff", trail: [120, 220, 255], cost: 60 },
-  { id: "rose",   name: "Rose",   head: "#ffd0de", trail: [255, 120, 165], cost: 140 },
-  { id: "lime",   name: "Lime",   head: "#e4ffc4", trail: [160, 255, 90],  cost: 240 },
-  { id: "violet", name: "Violet", head: "#eadcff", trail: [180, 130, 255], cost: 380 },
-  { id: "solar",  name: "Solar",  head: "#ffffff", trail: [255, 110, 50],  cost: 550 },
-  { id: "aurora", name: "Aurora", head: "#ffffff", trail: null,            cost: 800 },
-  { id: "void",   name: "Void",   head: "#0a0f1f", trail: [110, 120, 255], cost: 1200 }
+  { id: "ember",   name: "Ember",   head: "#ffd27a", trail: [255, 190, 80],  cost: 0 },
+  { id: "frost",   name: "Frost",   head: "#c9f4ff", trail: [120, 220, 255], cost: 100 },
+  { id: "rose",    name: "Rose",    head: "#ffd0de", trail: [255, 120, 165], cost: 250 },
+  { id: "lime",    name: "Lime",    head: "#e4ffc4", trail: [160, 255, 90],  cost: 450 },
+  { id: "violet",  name: "Violet",  head: "#eadcff", trail: [180, 130, 255], cost: 700 },
+  { id: "solar",   name: "Solar",   head: "#ffffff", trail: [255, 110, 50],  cost: 1000 },
+  { id: "aurora",  name: "Aurora",  head: "#ffffff", trail: null,            cost: 1500 },
+  { id: "void",    name: "Void",    head: "#0a0f1f", trail: [110, 120, 255], cost: 2500 },
+  { id: "nova",    name: "Nova",    head: "#fff0f8", trail: [255, 160, 230], plus: true },
+  { id: "phantom", name: "Phantom", head: "#e8fbff", trail: [170, 255, 240], plus: true },
+  { id: "prism",   name: "Prism",   head: "#ffffff", trail: null,            plus: true }
 ];
 const save = {
   best: store.get("ch-best", 0),
   dust: store.get("ch-dust", 0),
   owned: store.get("ch-owned", ["ember"]),
   skin: store.get("ch-skin", "ember"),
-  runs: store.get("ch-runs", 0)
+  runs: store.get("ch-runs", 0),
+  xp: store.get("ch-xp", 0),
+  missions: store.get("ch-missions", null),
+  mtier: store.get("ch-mtier", {})
 };
+const PLUS = false;                     // set by a real purchase later
+const CONTINUE_COST = 50;
 const skin = () => SKINS.find(s => s.id === save.skin) || SKINS[0];
 const dailyBest = () => store.get("ch-daily-" + today, 0);
+function addDust(n) { const v = PLUS ? n * 2 : n; save.dust += v; store.set("ch-dust", save.dust); return v; }
+
+// Levels: every hop and every perfect landing gives 1 XP.
+const RANKS = ["Space Cadet", "Pilot", "Navigator", "Voyager", "Star Captain", "Comet Master", "Galaxy Legend"];
+const needFor = l => 30 + l * 15;
+function levelInfo(xp = save.xp) {
+  let l = 1, base = 0;
+  while (xp >= base + needFor(l)) { base += needFor(l); l++; }
+  return { level: l, into: xp - base, need: needFor(l), rank: RANKS[Math.min(Math.floor((l - 1) / 4), RANKS.length - 1)] };
+}
+
+// Missions: three at a time; finishing one pays stardust and brings a harder one.
+const MT = {
+  hops:     { text: n => `Reach ${n} hops in one run`,        tiers: [10, 20, 30, 45, 60, 80, 100], pay: [15, 20, 30, 40, 50, 60, 80] },
+  streak:   { text: n => `Get a ×${n} perfect streak`,         tiers: [2, 3, 5, 7, 10, 15],          pay: [15, 20, 30, 45, 60, 80] },
+  dust:     { text: n => `Collect ${n} ✦ in one run`,          tiers: [5, 10, 20, 30, 45],           pay: [15, 20, 30, 40, 60] },
+  perfects: { text: n => `Land ${n} perfect landings`,         tiers: [10, 25, 50, 100, 200],        pay: [20, 30, 45, 60, 90], total: true },
+  golden:   { text: n => `Land on ${n} golden planet${n > 1 ? "s" : ""}`, tiers: [1, 3, 6, 10],     pay: [20, 30, 45, 60], total: true },
+  shield:   { text: n => `Get saved by a shield ${n}×`,        tiers: [1, 3, 6],                     pay: [20, 35, 50], total: true },
+  daily:    { text: () => "Play today's Daily run",            tiers: [1],                           pay: [25], total: true }
+};
+function mTarget(m) {
+  const T = MT[m.t], k = m.tier;
+  return k < T.tiers.length ? T.tiers[k] : Math.round(T.tiers[T.tiers.length - 1] * (1 + (k - T.tiers.length + 1) * .5));
+}
+function mPay(m) { const T = MT[m.t]; return Math.round((T.pay[Math.min(m.tier, T.pay.length - 1)] + Math.max(0, m.tier - T.pay.length + 1) * 10) * .7 / 5) * 5; }
+function newMission(exclude) {
+  const playedDaily = store.get("ch-daily-played-" + today, false);
+  const types = Object.keys(MT).filter(t => !exclude.includes(t) && !(t === "daily" && playedDaily));
+  const t = types[Math.floor(Math.random() * types.length)];
+  return { t, tier: save.mtier[t] || 0, p: 0 };
+}
+function ensureMissions() {
+  if (!Array.isArray(save.missions) || save.missions.some(m => !MT[m.t])) save.missions = [];
+  if (!save.missions.length) save.missions = [{ t: "hops", tier: 0, p: 0 }, { t: "streak", tier: 0, p: 0 }, { t: "dust", tier: 0, p: 0 }];
+  while (save.missions.length < 3) save.missions.push(newMission(save.missions.map(m => m.t)));
+  store.set("ch-missions", save.missions);
+}
+ensureMissions();
+function missionEvent(kind, value) {
+  let changed = false;
+  save.missions.forEach((m, idx) => {
+    if (m.t !== kind) return;
+    const p = MT[kind].total ? m.p + value : Math.max(m.p, value);
+    if (p === m.p) return;
+    m.p = p; changed = true;
+    if (m.p >= mTarget(m)) {
+      const got = addDust(mPay(m));
+      save.mtier[kind] = (save.mtier[kind] || 0) + 1;
+      store.set("ch-mtier", save.mtier);
+      toast(`Mission complete: ${MT[kind].text(mTarget(m))}  +${got} ✦`);
+      if (G && state === "play") pop(G.pos.x, G.pos.y - 60, `MISSION +${got} ✦`, "#7ee3ff", 16);
+      sfx.buy(); track("comet-mission");
+      save.missions[idx] = newMission(save.missions.map(x => x.t));
+    }
+  });
+  if (changed) { store.set("ch-missions", save.missions); updateHud(); }
+}
+function missionsHTML() {
+  return '<div class="head">Missions</div>' + save.missions.map(m => {
+    const tg = mTarget(m), p = Math.min(m.p, tg);
+    return `<div class="mission"><div class="t"><span>${MT[m.t].text(tg)}</span><span>${p}/${tg} · ${mPay(m)} ✦</span></div>` +
+      `<div class="bar"><i style="width:${Math.round(p / tg * 100)}%"></i></div></div>`;
+  }).join("");
+}
+function levelHTML() {
+  const L = levelInfo();
+  return `<b>Level ${L.level} · ${L.rank}</b><span style="float:right">${L.into}/${L.need} XP</span>` +
+    `<div class="bar"><i style="width:${Math.round(L.into / L.need * 100)}%"></i></div>`;
+}
+function addXP(n) {
+  const before = levelInfo().level;
+  save.xp += n; store.set("ch-xp", save.xp);
+  const after = levelInfo().level;
+  if (after > before && G) {
+    const got = addDust(5 + after);
+    pop(G.pos.x, G.pos.y - 84, `LEVEL ${after}!  +${got} ✦`, "#ffd27a", 18);
+    setTimeout(() => sfx.milestone(), 200);
+    if (after === 5 || after === 10) track("comet-level-" + after, true);
+  }
+}
 
 // ---------- Canvas & world ----------
 const cv = $("game"), ctx = cv.getContext("2d");
@@ -285,7 +419,7 @@ addEventListener("resize", resize);
 resize();
 
 const STARS = Array.from({ length: 140 }, () => ({ x: Math.random(), y: Math.random(), z: .08 + Math.random() * .45, s: .5 + Math.random() * 1.4, tw: Math.random() * TAU }));
-const PLANET_HUES = [205, 265, 320, 170, 28, 48, 190, 290];
+const PLANET_HUES = [205, 265, 320, 170, 28, 190, 290, 150];
 const ZONE_HUES = [228, 262, 196, 300, 170, 20];
 
 let mode = "endless";
@@ -295,13 +429,13 @@ let G = null;                // the current run
 function newRun() {
   const seed = mode === "daily" ? hash("comet-" + today) : Math.floor(Math.random() * 2 ** 31);
   G = {
-    rng: mulberry32(seed), planets: [], dust: [], parts: [], rings: [], pops: [], trail: [],
-    score: 0, hops: 0, perfects: 0, streak: 0, dustRun: 0,
+    rng: mulberry32(seed), planets: [], dust: [], items: [], parts: [], rings: [], pops: [], trail: [],
+    score: 0, hops: 0, perfects: 0, streak: 0, dustRun: 0, shield: false, continued: false, result: null,
     cur: null, from: null, dir: 1, theta: Math.PI / 2, orbitR: 0, flying: false, flyT: 0,
     pos: { x: VW / 2, y: 0 }, vel: { x: 0, y: 0 }, camY: 0, shake: 0, dead: false, nearMiss: Infinity,
     time: 0, zoneHue: ZONE_HUES[0]
   };
-  const p0 = { i: 0, x: VW / 2, y: 0, r: 24, R: 60, omega: 1.6, dir: 1, move: null, hue: PLANET_HUES[0] };
+  const p0 = { i: 0, x: VW / 2, y: 0, r: 24, R: 60, omega: 1.6, dir: 1, move: null, hue: PLANET_HUES[0], golden: false };
   G.planets.push(p0);
   while (G.planets.length < 7) addPlanet();
   G.cur = G.from = p0; G.dir = p0.dir; G.orbitR = p0.R;
@@ -309,7 +443,7 @@ function newRun() {
   G.camY = p0.y - VH * .68;
 }
 
-// Each new planet is a bit further, smaller and faster. Later ones drift sideways.
+// Each new planet is a bit further, smaller and faster. Later ones drift sideways. Some are golden; some gaps hold a shield.
 function addPlanet() {
   const prev = G.planets[G.planets.length - 1], rng = G.rng;
   const i = prev.i + 1, d = Math.min(1, i / 70);
@@ -327,12 +461,14 @@ function addPlanet() {
     x = x0;
   }
   const y = prev.y - gap;
-  G.planets.push({ i, x, y, r, R, omega, dir: rng() < .5 ? 1 : -1, move, hue: PLANET_HUES[Math.floor(rng() * PLANET_HUES.length)] });
+  const golden = i > 3 && (i % 13 === 0 || rng() < .05);
+  G.planets.push({ i, x, y, r, R, omega, dir: rng() < .5 ? 1 : -1, move, golden, hue: golden ? 45 : PLANET_HUES[Math.floor(rng() * PLANET_HUES.length)] });
   const n = rng() < .65 ? 2 : 3;
   for (let k = 1; k <= n; k++) {
     const t = k / (n + 1);
     G.dust.push({ x: clamp(lerp(prev.x, x, t) + (rng() - .5) * 44, 24, VW - 24), y: lerp(prev.y, y, t) + (rng() - .5) * 24, got: false, ph: rng() * TAU });
   }
+  if (i > 5 && rng() < .1) G.items.push({ x: clamp(lerp(prev.x, x, .5) + (rng() - .5) * 30, 30, VW - 30), y: lerp(prev.y, y, .5), got: false });
 }
 
 function hop() {
@@ -358,10 +494,10 @@ function capture(p, dx, dy, d) {
   let pts = gained, label = "+" + gained;
   if (perfect) {
     G.streak++; G.perfects++;
-    G.dustRun++; save.dust++; store.set("ch-dust", save.dust);    // a perfect landing also earns one stardust
+    if (G.streak > 1) G.dustRun += addDust(1);                 // perfect streaks also earn stardust
     const bonus = Math.min(G.streak, 5);
     pts += bonus;
-    label = (G.streak > 1 ? `PERFECT ×${G.streak}  +${pts}` : `PERFECT  +${pts}`) + "  ✦";
+    label = G.streak > 1 ? `PERFECT ×${G.streak}  +${pts}  ✦` : `PERFECT  +${pts}`;
     sfx.perfect(G.streak);
     buzz(15);
     G.rings.push({ x: p.x, y: p.y, r: p.R, life: 1, hue: 45 });
@@ -373,23 +509,56 @@ function capture(p, dx, dy, d) {
   pop(p.x, p.y - p.R - 14, label, perfect ? "#ffd27a" : "#eef1f8", perfect ? 17 : 15);
   burst(G.pos.x, G.pos.y, perfect ? 18 : 10, `hsl(${p.hue},90%,70%)`, 140);
   G.rings.push({ x: p.x, y: p.y, r: p.r, life: .8, hue: p.hue });
+  if (p.golden) {
+    const got = addDust(5); G.dustRun += got;
+    pop(p.x, p.y + p.R + 16, `GOLDEN  +${got} ✦`, "#ffd27a", 16);
+    burst(p.x, p.y, 30, "rgba(255,210,122,1)", 200);
+    G.rings.push({ x: p.x, y: p.y, r: p.R, life: 1.3, hue: 45 });
+    sfx.golden(); missionEvent("golden", 1); track("comet-golden", true);
+  }
   if (Math.floor(G.hops / 10) > Math.floor(before / 10)) {
     const m = Math.floor(G.hops / 10) * 10;
     setTimeout(() => sfx.milestone(), 120);
     pop(p.x, p.y - p.R - 40, `★ ${m} hops`, "#ffd27a", 20);
     G.rings.push({ x: p.x, y: p.y, r: p.R * 1.2, life: 1.4, hue: 45 });
-    if (m === 10 || m === 25 || m === 50 || m === 100) track("comet-hops-" + m, true);
+    if (m === 10 || m === 50 || m === 100) track("comet-hops-" + m, true);
   }
   if (G.hops >= 25 && before < 25) track("comet-hops-25", true);
+  addXP(gained + (perfect ? 1 : 0));
+  missionEvent("hops", G.hops);
+  missionEvent("streak", G.streak);
+  if (perfect) missionEvent("perfects", 1);
   while (G.planets[G.planets.length - 1].i < p.i + 6) addPlanet();
   updateHud();
 }
 
+// Put the comet back into orbit around the planet it last left (shield or continue).
+function rescue(text) {
+  const p = G.from;
+  G.dead = false; G.flying = false; G.cur = p; G.streak = 0;
+  G.theta = Math.atan2(G.pos.y - p.y, G.pos.x - p.x);
+  if (!isFinite(G.theta)) G.theta = Math.PI / 2;
+  G.dir = p.dir; G.orbitR = p.R * 1.8;
+  G.pos = { x: p.x + Math.cos(G.theta) * G.orbitR, y: p.y + Math.sin(G.theta) * G.orbitR };
+  G.trail.length = 0;
+  G.rings.push({ x: p.x, y: p.y, r: p.R, life: 1.3, hue: 195 });
+  burst(G.pos.x, G.pos.y, 24, "rgba(126,227,255,1)", 160);
+  pop(p.x, p.y - p.R - 20, text, "#7ee3ff", 17);
+}
+
 function die() {
+  if (G.shield) {
+    G.shield = false;
+    rescue("SHIELD SAVED YOU");
+    sfx.saved(); buzz(30);
+    missionEvent("shield", 1); track("comet-shield", true);
+    return;
+  }
   G.dead = true; G.shake = 16; G.flying = false;
   burst(G.pos.x, G.pos.y, 46, skinColor(0, 1), 260);
   sfx.die(); buzz(70);
   save.runs++; store.set("ch-runs", save.runs);
+  missionEvent("dust", G.dustRun);
   setTimeout(showGameOver, 750);
 }
 
@@ -403,7 +572,7 @@ function burst(x, y, n, color, speed) {
 function pop(x, y, text, color, size) { G.pops.push({ x, y, text, color, size, life: 1 }); }
 function skinColor(k, a) {
   const s = skin();
-  if (!s.trail) return `hsla(${(G.time * 140 + k * 14) % 360},95%,65%,${a})`;
+  if (!s.trail) return `hsla(${(G.time * (s.id === "prism" ? 300 : 140) + k * 14) % 360},95%,65%,${a})`;
   return `rgba(${s.trail[0]},${s.trail[1]},${s.trail[2]},${a})`;
 }
 
@@ -424,8 +593,16 @@ function update(dt) {
         G.pos.x += G.vel.x * dt / steps; G.pos.y += G.vel.y * dt / steps;
         for (const d of G.dust) {
           if (!d.got && Math.hypot(d.x - G.pos.x, d.y - G.pos.y) < 20) {
-            d.got = true; G.dustRun++; save.dust++; store.set("ch-dust", save.dust);
+            d.got = true; G.dustRun += addDust(1);
             sfx.dust(); burst(d.x, d.y, 6, "rgba(255,210,122,1)", 70); updateHud();
+            missionEvent("dust", G.dustRun);
+          }
+        }
+        for (const it of G.items) {
+          if (!it.got && Math.hypot(it.x - G.pos.x, it.y - G.pos.y) < 24) {
+            it.got = true; G.shield = true;
+            sfx.shield(); burst(it.x, it.y, 16, "rgba(126,227,255,1)", 120);
+            pop(it.x, it.y - 24, "SHIELD", "#7ee3ff", 16);
           }
         }
         for (const p of G.planets) {
@@ -458,6 +635,7 @@ function update(dt) {
   const cut = G.camY + VH + 220;
   G.planets = G.planets.filter(p => p.y < cut || p === G.cur || p === G.from);
   G.dust = G.dust.filter(d => d.y < cut);
+  G.items = G.items.filter(d => d.y < cut);
 }
 
 // ---------- Draw ----------
@@ -497,10 +675,12 @@ function draw() {
     ctx.strokeStyle = `hsla(${p.hue},90%,75%,${active ? .6 : .25})`;
     ctx.beginPath(); ctx.arc(p.x, p.y, p.R, 0, TAU); ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle = `hsla(${p.hue},90%,60%,.12)`;
-    ctx.beginPath(); ctx.arc(p.x, p.y, p.r * 1.7, 0, TAU); ctx.fill();
+    const halo = p.golden ? .22 + .1 * Math.sin(G.time * 4) : .12;
+    ctx.fillStyle = `hsla(${p.hue},90%,60%,${halo})`;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r * (p.golden ? 2.1 : 1.7), 0, TAU); ctx.fill();
     const g = ctx.createRadialGradient(p.x - p.r * .35, p.y - p.r * .4, p.r * .1, p.x, p.y, p.r);
-    g.addColorStop(0, `hsl(${p.hue},85%,74%)`); g.addColorStop(1, `hsl(${p.hue},60%,30%)`);
+    if (p.golden) { g.addColorStop(0, "#fff3c4"); g.addColorStop(.5, "#ffc65c"); g.addColorStop(1, "#a8661a"); }
+    else { g.addColorStop(0, `hsl(${p.hue},85%,74%)`); g.addColorStop(1, `hsl(${p.hue},60%,30%)`); }
     ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, TAU); ctx.fill();
   }
 
@@ -513,6 +693,15 @@ function draw() {
     for (let k = 0; k < 8; k++) { const rr = k % 2 ? s * .35 : s; ctx.lineTo(Math.cos(k * TAU / 8) * rr, Math.sin(k * TAU / 8) * rr); }
     ctx.fill(); ctx.restore();
   }
+  for (const it of G.items) {
+    if (it.got) continue;
+    const r = 11 + Math.sin(G.time * 3) * 1.5;
+    ctx.save(); ctx.shadowColor = "#7ee3ff"; ctx.shadowBlur = 14;
+    ctx.strokeStyle = "#7ee3ff"; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(it.x, it.y, r, 0, TAU); ctx.stroke();
+    ctx.fillStyle = "rgba(126,227,255,.25)"; ctx.fill();
+    ctx.restore();
+  }
 
   ctx.globalCompositeOperation = "lighter";
   for (const r of G.rings) {
@@ -523,7 +712,7 @@ function draw() {
   const T = G.trail, glow = Math.min(G.streak, 6);
   for (let k = 1; k < T.length; k++) {
     const a = k / T.length;
-    ctx.strokeStyle = skinColor(k, a * .9); ctx.lineWidth = .8 + a * (7 + glow);
+    ctx.strokeStyle = skinColor(k, a * (skin().id === "phantom" ? .45 : .9)); ctx.lineWidth = .8 + a * (7 + glow);
     ctx.beginPath(); ctx.moveTo(T[k - 1].x, T[k - 1].y); ctx.lineTo(T[k].x, T[k].y); ctx.stroke();
   }
   for (const q of G.parts) { ctx.fillStyle = q.color; ctx.globalAlpha = Math.max(0, q.life); ctx.fillRect(q.x - q.size / 2, q.y - q.size / 2, q.size, q.size); }
@@ -539,13 +728,17 @@ function draw() {
     const s = skin();
     ctx.fillStyle = s.head; ctx.beginPath(); ctx.arc(G.pos.x, G.pos.y, 5.5, 0, TAU); ctx.fill();
     if (s.id === "void") { ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.5; ctx.stroke(); }
+    if (G.shield) {
+      ctx.strokeStyle = `rgba(126,227,255,${.6 + .3 * Math.sin(G.time * 6)})`; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(G.pos.x, G.pos.y, 12, 0, TAU); ctx.stroke();
+    }
   }
 
   ctx.textAlign = "center"; ctx.textBaseline = "middle";
   for (const t of G.pops) {
     ctx.globalAlpha = Math.min(1, t.life * 1.6);
     ctx.font = `700 ${t.size}px Unbounded, "Arial Black", sans-serif`;
-    ctx.fillStyle = t.color; ctx.fillText(t.text, clamp(t.x, 90, VW - 90), t.y);
+    ctx.fillStyle = t.color; ctx.fillText(t.text, clamp(t.x, 110, VW - 110), t.y);
   }
   ctx.globalAlpha = 1;
 }
@@ -560,28 +753,53 @@ function frame(now) {
 
 // ---------- UI ----------
 function updateHud() {
+  if (!G) return;
   $("score").textContent = G.score;
   $("score-sub").textContent = mode === "daily" ? `Today's best ${dailyBest()}` : `Best ${save.best}`;
   $("dust").textContent = "✦ " + save.dust;
 }
 
+// First Daily run of the day: keep a streak of days and pay a growing bonus.
+function dailyCheckIn() {
+  if (store.get("ch-daily-played-" + today, false)) return;
+  store.set("ch-daily-played-" + today, true);
+  const st = store.get("ch-daily-streak", { n: 0, last: null });
+  const n = st.last === yesterday ? st.n + 1 : 1;
+  store.set("ch-daily-streak", { n, last: today });
+  const got = addDust(Math.min(10 * n, 50));
+  setTimeout(() => toast(n > 1 ? `Day ${n} streak! +${got} ✦` : `Daily bonus +${got} ✦. Come back tomorrow for more!`), 300);
+  missionEvent("daily", 1);
+  track("comet-daily", true);
+}
+
 function startPlay() {
   newRun();
   state = "play";
-  ["ov-menu", "ov-over", "ov-skins"].forEach(id => ($(id).hidden = true));
+  ["ov-menu", "ov-over", "ov-skins", "ov-plus"].forEach(id => ($(id).hidden = true));
   $("score-box").hidden = false;
   $("hint").hidden = save.runs >= 2;
+  if (mode === "daily") dailyCheckIn();
   updateHud();
   track("comet-play", true);
-  if (mode === "daily") track("comet-daily", true);
   overShownAt = Infinity;
+}
+
+function continueRun() {
+  if (G.continued || (!PLUS && save.dust < CONTINUE_COST)) return;
+  if (!PLUS) { save.dust -= CONTINUE_COST; store.set("ch-dust", save.dust); }
+  G.continued = true; G.result = null;
+  rescue("BACK IN ORBIT");
+  state = "play";
+  $("ov-over").hidden = true;
+  sfx.saved(); track("comet-continue");
+  updateHud();
 }
 
 let overShownAt = Infinity;
 function showGameOver() {
   state = "over";
   const isDaily = mode === "daily";
-  if (!G.result) {   // decide the record once per run; this screen can be shown again after the Comets screen
+  if (!G.result) {   // decide the record once per death; this screen can be shown again after the Comets screen
     const prevBest = isDaily ? dailyBest() : save.best;
     const newBest = G.score > prevBest && G.score > 0;
     if (newBest) {
@@ -596,27 +814,36 @@ function showGameOver() {
   $("over-score").textContent = G.score;
   $("over-badge").hidden = !newBest;
   $("over-best").textContent = `${G.hops} hops · ${G.perfects} perfect` + (newBest ? "" : ` · ${isDaily ? "today's best" : "best"} ${prevBest}`);
-  $("over-dust").textContent = G.dustRun ? `+${G.dustRun} stardust ✦` : "Collect stardust ✦ on the way to unlock new comets";
-  const next = SKINS.find(s => !save.owned.includes(s.id));
-  $("over-next").innerHTML = !next ? "<b>Every comet unlocked.</b> Legend." :
-    save.dust >= next.cost ? `<b>You can unlock ${next.name}!</b> Open Comets.<div class="bar"><i style="width:100%"></i></div>` :
-    `Next comet: <b>${next.name}</b> · ${save.dust} / ${next.cost} ✦<div class="bar"><i style="width:${Math.round(save.dust / next.cost * 100)}%"></i></div>`;
+  const next = SKINS.find(s => !s.plus && !save.owned.includes(s.id));
+  $("over-dust").textContent = (G.dustRun ? `+${G.dustRun} ✦ this run. ` : "") +
+    (next ? (save.dust >= next.cost ? `You can unlock ${next.name} now!` : `${next.name} comet: ${save.dust}/${next.cost} ✦`) : "Every comet unlocked!");
+  const cb = $("btn-continue");
+  cb.hidden = G.continued;
+  cb.disabled = !PLUS && save.dust < CONTINUE_COST;
+  cb.textContent = PLUS ? "Continue (free with Plus)" : save.dust >= CONTINUE_COST ? `Continue · ${CONTINUE_COST} ✦` : `Continue · ${CONTINUE_COST} ✦ (you have ${save.dust})`;
+  $("btn-plus2").hidden = PLUS || G.continued || save.dust >= CONTINUE_COST;
+  $("over-level").innerHTML = levelHTML();
+  $("over-missions").innerHTML = missionsHTML();
   updateHud();
   $("ov-over").hidden = false;
   overShownAt = performance.now();
-  $("btn-retry").focus({ preventScroll: true });
 }
 
 function showMenu() {
   state = "menu";
   newRun();
-  ["ov-over", "ov-skins"].forEach(id => ($(id).hidden = true));
+  ["ov-over", "ov-skins", "ov-plus"].forEach(id => ($(id).hidden = true));
   $("score-box").hidden = true; $("hint").hidden = true;
   $("m-endless").setAttribute("aria-pressed", mode === "endless");
   $("m-daily").setAttribute("aria-pressed", mode === "daily");
+  $("menu-tag").hidden = save.runs >= 3;
+  const st = store.get("ch-daily-streak", { n: 0, last: null });
+  const streakAlive = st.last === today || st.last === yesterday;
   $("menu-best").textContent = mode === "daily"
-    ? `Same galaxy for everyone today. Your best today: ${dailyBest()}`
+    ? `Same galaxy for everyone today. Best today: ${dailyBest()}` + (streakAlive && st.n > 0 ? ` · 🔥 ${st.n}-day streak` : "")
     : save.best ? `Your best: ${save.best}` : "New here? Just tap. You'll get it in a few tries.";
+  $("menu-level").innerHTML = levelHTML();
+  $("menu-missions").innerHTML = missionsHTML();
   $("ov-menu").hidden = false;
   updateHud();
 }
@@ -632,14 +859,15 @@ function renderSkins() {
   $("skins-dust").textContent = `You have ${save.dust} stardust ✦`;
   $("skins").innerHTML = "";
   for (const s of SKINS) {
-    const owned = save.owned.includes(s.id), b = document.createElement("button");
-    b.className = "skin" + (owned ? "" : save.dust >= s.cost ? " afford" : " locked");
+    const owned = save.owned.includes(s.id) || (s.plus && PLUS), b = document.createElement("button");
+    b.className = "skin" + (owned ? "" : !s.plus && save.dust >= s.cost ? " afford" : " locked");
     b.setAttribute("aria-pressed", save.skin === s.id);
     const col = s.trail ? `rgb(${s.trail.join(",")})` : "conic-gradient(#ff6b6b,#ffd27a,#7dff8a,#7ad7ff,#c08bff,#ff6b6b)";
-    b.innerHTML = `<span class="dot" style="background:${col};box-shadow:0 0 14px ${s.trail ? col : "#fff8"}"></span>${s.name}` +
-      `<small>${save.skin === s.id ? "Equipped" : owned ? "Tap to use" : s.cost + " ✦"}</small>`;
+    const label = save.skin === s.id ? "Equipped" : owned ? "Tap to use" : s.plus ? "Comet Hop+" : s.cost + " ✦";
+    b.innerHTML = `<span class="dot" style="background:${col};box-shadow:0 0 14px ${s.trail ? col : "#fff8"}"></span>${s.name}<small>${label}</small>`;
     b.onclick = () => {
       if (owned) { save.skin = s.id; store.set("ch-skin", s.id); }
+      else if (s.plus) { openPlus("ov-skins"); return; }
       else if (save.dust >= s.cost) {
         save.dust -= s.cost; save.owned.push(s.id); save.skin = s.id;
         store.set("ch-dust", save.dust); store.set("ch-owned", save.owned); store.set("ch-skin", s.id);
@@ -649,6 +877,16 @@ function renderSkins() {
     };
     $("skins").appendChild(b);
   }
+}
+
+let plusFrom = "ov-menu";
+function openPlus(from) {
+  plusFrom = from;
+  $(from).hidden = true;
+  $("plus-note").hidden = true;
+  $("btn-plus-want").hidden = false;
+  $("ov-plus").hidden = false;
+  track("comet-plus-open");
 }
 
 function shareText() {
@@ -669,7 +907,7 @@ async function share() {
 let toastTimer;
 function toast(msg) {
   const t = $("toast"); t.textContent = msg; t.hidden = false;
-  clearTimeout(toastTimer); toastTimer = setTimeout(() => (t.hidden = true), 2200);
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => (t.hidden = true), 2600);
 }
 
 const SPEAKER = '<path d="M4 9h4l5-4v14l-5-4H4z"/>';
@@ -692,11 +930,21 @@ document.addEventListener("keydown", e => {
 });
 $("btn-play").onclick = startPlay;
 $("btn-retry").onclick = startPlay;
+$("btn-continue").onclick = continueRun;
 $("btn-menu").onclick = showMenu;
 $("btn-share").onclick = share;
 $("btn-skins").onclick = () => openSkins("ov-menu");
 $("btn-skins2").onclick = () => openSkins("ov-over");
-$("btn-skins-close").onclick = () => { $("ov-skins").hidden = true; $(skinsFrom).hidden = false; if (skinsFrom === "ov-over") showGameOver(); };
+$("btn-skins-close").onclick = () => { $("ov-skins").hidden = true; if (skinsFrom === "ov-over") showGameOver(); else showMenu(); };
+$("btn-plus").onclick = () => openPlus("ov-menu");
+$("btn-plus2").onclick = () => openPlus("ov-over");
+$("btn-plus-want").onclick = () => { $("plus-note").hidden = false; $("btn-plus-want").hidden = true; track("comet-plus-want"); };
+$("btn-plus-close").onclick = () => {
+  $("ov-plus").hidden = true;
+  if (plusFrom === "ov-skins") { renderSkins(); $("ov-skins").hidden = false; }
+  else if (plusFrom === "ov-over") showGameOver();
+  else showMenu();
+};
 $("m-endless").onclick = () => { mode = "endless"; showMenu(); };
 $("m-daily").onclick = () => { mode = "daily"; showMenu(); };
 $("btn-sound").onclick = () => { sfx.toggle(); paintSound(); toast(sfx.muted ? "Sound off" : "Sound on"); };

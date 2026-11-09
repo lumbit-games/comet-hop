@@ -2,7 +2,7 @@
   "name": "Comet Hop",
   "short_name": "Comet Hop",
   "description": "Tap to launch your comet and land in the next orbit. How far can you go?",
-  "id": "./",
+  "id": "/comet-hop/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
